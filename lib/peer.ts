@@ -549,6 +549,8 @@ export class Peer extends EventEmitterWithError<PeerErrorType, PeerEvents> {
 		const mediaConnection = new MediaConnection(peer, this, {
 			...options,
 			_stream: stream,
+			recieverTransformScript: options.recieverTransformScript,
+			senderTransformScript: options.senderTransformScript,
 		});
 		this._addConnection(peer, mediaConnection);
 		return mediaConnection;

@@ -21,13 +21,19 @@ export class Negotiator<
 
 	/** Returns a PeerConnection object set up correctly (for data, media). */
 	startConnection(options: any) {
-		const peerConnection = this._startPeerConnection();
+		const peerConnection = this._startPeerConnection(
+			options.receiverTransformScript,
+		);
 
 		// Set the connection's PC.
 		this.connection.peerConnection = peerConnection;
 
 		if (this.connection.type === ConnectionType.Media && options._stream) {
-			this._addTracksToConnection(options._stream, peerConnection);
+			this._addTracksToConnection(
+				options._stream,
+				peerConnection,
+				options.senderTransformScript,
+			);
 		}
 
 		// What do we need to do now?
@@ -49,20 +55,27 @@ export class Negotiator<
 	}
 
 	/** Start a PC. */
-	private _startPeerConnection(): RTCPeerConnection {
+	/** @param peerConnection
+	 */
+	private _startPeerConnection(
+		receiverTransformScript?: RTCRtpScriptTransform,
+	): RTCPeerConnection {
 		logger.log("Creating RTCPeerConnection.");
 
 		const peerConnection = new RTCPeerConnection(
 			this.connection.provider.options.config,
 		);
 
-		this._setupListeners(peerConnection);
+		this._setupListeners(peerConnection, receiverTransformScript);
 
 		return peerConnection;
 	}
 
 	/** Set up various WebRTC listeners. */
-	private _setupListeners(peerConnection: RTCPeerConnection) {
+	private _setupListeners(
+		peerConnection: RTCPeerConnection,
+		receiverTransformScript?: RTCRtpScriptTransform,
+	) {
 		const peerId = this.connection.peer;
 		const connectionId = this.connection.connectionId;
 		const connectionType = this.connection.type;
@@ -147,6 +160,9 @@ export class Negotiator<
 		peerConnection.ontrack = (evt) => {
 			logger.log("Received remote stream");
 
+			if (receiverTransformScript) {
+				evt.receiver.transform = receiverTransformScript;
+			}
 			const stream = evt.streams[0];
 			const connection = provider.getConnection(peerId, connectionId);
 
@@ -340,6 +356,7 @@ export class Negotiator<
 	private _addTracksToConnection(
 		stream: MediaStream,
 		peerConnection: RTCPeerConnection,
+		transformScript?: RTCRtpScriptTransform,
 	): void {
 		logger.log(`add tracks from stream ${stream.id} to peer connection`);
 
@@ -350,7 +367,10 @@ export class Negotiator<
 		}
 
 		stream.getTracks().forEach((track) => {
-			peerConnection.addTrack(track, stream);
+			const sender = peerConnection.addTrack(track, stream);
+			if (transformScript) {
+				sender.transform = transformScript;
+			}
 		});
 	}
 
@@ -363,5 +383,15 @@ export class Negotiator<
 		);
 
 		mediaConnection.addStream(stream);
+	}
+}
+
+declare global {
+	interface RTCRtpScriptTransform {}
+	interface RTCRtpSender {
+		transform: RTCRtpScriptTransform;
+	}
+	interface RTCRtpReceiver {
+		transform: RTCRtpScriptTransform;
 	}
 }
