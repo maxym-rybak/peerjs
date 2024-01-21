@@ -3,7 +3,7 @@ export interface AnswerOption {
 	 * Function which runs before create answer to modify sdp answer message.
 	 */
 	sdpTransform?: Function;
-	recieverTransformScript?: RTCRtpScriptTransform;
+	receiverTransformScript?: RTCRtpScriptTransform;
 	senderTransformScript?: RTCRtpScriptTransform;
 }
 
@@ -50,6 +50,6 @@ export interface CallOption {
 	 * Function which runs before create offer to modify sdp offer message.
 	 */
 	sdpTransform?: Function;
-	recieverTransformScript?: RTCRtpScriptTransform;
+	receiverTransformScript?: RTCRtpScriptTransform;
 	senderTransformScript?: RTCRtpScriptTransform;
 }

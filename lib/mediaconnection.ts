@@ -65,7 +65,7 @@ export class MediaConnection extends BaseConnection<MediaConnectionEvents> {
 			this._negotiator.startConnection({
 				_stream: this._localStream,
 				originator: true,
-				recieverTransformScript: options.recieverTransformScript,
+				receiverTransformScript: options.receiverTransformScript,
 				senderTransformScript: options.senderTransformScript,
 			});
 		}
@@ -141,7 +141,7 @@ export class MediaConnection extends BaseConnection<MediaConnectionEvents> {
 		this._negotiator.startConnection({
 			...this.options._payload,
 			_stream: stream,
-			recieverTransformScript: options.recieverTransformScript,
+			receiverTransformScript: options.receiverTransformScript,
 			senderTransformScript: options.senderTransformScript,
 		});
 		// Retrieve lost messages stored because PeerConnection not set up.
